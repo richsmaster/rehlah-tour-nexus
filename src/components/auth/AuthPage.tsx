@@ -25,16 +25,23 @@ export const AuthPage = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    console.log('Login attempt:', loginData.email);
 
     const { error } = await signIn(loginData.email, loginData.password);
     
     if (error) {
+      console.error('Login error:', error);
       toast({
         title: 'خطأ في تسجيل الدخول',
-        description: error.message,
+        description: error.message === 'Invalid login credentials' ? 
+          'بيانات الدخول غير صحيحة' : 
+          error.message === 'Email not confirmed' ?
+          'يرجى تأكيد البريد الإلكتروني أولاً' :
+          error.message,
         variant: 'destructive',
       });
     } else {
+      console.log('Login successful');
       toast({
         title: 'تم تسجيل الدخول بنجاح',
         description: 'مرحباً بك في النظام',
@@ -45,21 +52,37 @@ export const AuthPage = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (!signupData.role) {
+      toast({
+        title: 'خطأ في البيانات',
+        description: 'يرجى اختيار المنصب المطلوب',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-    const { error } = await signUp(signupData.email, signupData.password, signupData.fullName);
+    setLoading(true);
+    console.log('Signup attempt:', signupData.email, signupData.role);
+
+    const { error } = await signUp(signupData.email, signupData.password, signupData.fullName, signupData.role);
     
     if (error) {
+      console.error('Signup error:', error);
       toast({
         title: 'خطأ في التسجيل',
-        description: error.message,
+        description: error.message === 'User already registered' ?
+          'المستخدم مسجل مسبقاً' :
+          error.message,
         variant: 'destructive',
       });
     } else {
+      console.log('Signup successful');
       toast({
         title: 'تم إنشاء الحساب بنجاح',
-        description: 'سيتم مراجعة طلبك والموافقة عليه قريباً',
+        description: 'سيتم مراجعة طلبك والموافقة عليه قريباً. سيصل إيميل الموافقة إلى الإدارة.',
       });
+      // Reset form
+      setSignupData({ email: '', password: '', fullName: '', role: '' });
     }
     setLoading(false);
   };
@@ -69,7 +92,7 @@ export const AuthPage = () => {
       <div 
         className="absolute inset-0 opacity-20" 
         style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2334d399' fill-opacity='0.1'%3E%3Ccircle cx='7' cy='7' r='7'/%3E%3Ccircle cx='53' cy='7' r='7'/%3E%3Ccircle cx='7' cy='53' r='7'/%3E%3Ccircle cx='53' cy='53' r='7'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23059669' fill-opacity='0.1'%3E%3Ccircle cx='7' cy='7' r='7'/%3E%3Ccircle cx='53' cy='7' r='7'/%3E%3Ccircle cx='7' cy='53' r='7'/%3E%3Ccircle cx='53' cy='53' r='7'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
         }}
       />
       
@@ -141,6 +164,11 @@ export const AuthPage = () => {
                     {loading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
                   </Button>
                 </form>
+                
+                <div className="mt-6 p-4 bg-green-50 rounded-lg">
+                  <h4 className="font-semibold text-green-800 mb-2">للاختبار:</h4>
+                  <p className="text-sm text-green-700">يمكنك إنشاء حساب جديد وسيتم إرسال طلب موافقة للإدارة</p>
+                </div>
               </TabsContent>
               
               <TabsContent value="signup">
