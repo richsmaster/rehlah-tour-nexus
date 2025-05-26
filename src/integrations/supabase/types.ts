@@ -9,7 +9,128 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      customer_bookings: {
+        Row: {
+          booking_date: string
+          created_at: string | null
+          customer_email: string
+          customer_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          program_id: string | null
+          status: string | null
+        }
+        Insert: {
+          booking_date: string
+          created_at?: string | null
+          customer_email: string
+          customer_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          program_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          booking_date?: string
+          created_at?: string | null
+          customer_email?: string
+          customer_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          program_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_bookings_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          is_approved: boolean | null
+          role: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id: string
+          is_approved?: boolean | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          is_approved?: boolean | null
+          role?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      programs: {
+        Row: {
+          activities: string[]
+          cities: string[]
+          country: string
+          created_at: string | null
+          description: string | null
+          duration: string
+          hotels: string[]
+          id: string
+          includes: string[]
+          is_available: boolean | null
+          name: string
+          price: string
+          updated_at: string | null
+        }
+        Insert: {
+          activities: string[]
+          cities: string[]
+          country: string
+          created_at?: string | null
+          description?: string | null
+          duration: string
+          hotels: string[]
+          id?: string
+          includes: string[]
+          is_available?: boolean | null
+          name: string
+          price: string
+          updated_at?: string | null
+        }
+        Update: {
+          activities?: string[]
+          cities?: string[]
+          country?: string
+          created_at?: string | null
+          description?: string | null
+          duration?: string
+          hotels?: string[]
+          id?: string
+          includes?: string[]
+          is_available?: boolean | null
+          name?: string
+          price?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

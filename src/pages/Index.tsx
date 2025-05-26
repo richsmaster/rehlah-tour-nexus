@@ -1,72 +1,95 @@
 
-import { useState } from "react";
-import { LoginForm } from "@/components/auth/LoginForm";
-import { Dashboard } from "@/components/dashboard/Dashboard";
-import { Button } from "@/components/ui/button";
-import { LogOut, Globe } from "lucide-react";
+import { useAuth } from '@/hooks/useAuth';
+import { AuthPage } from '@/components/auth/AuthPage';
+import { Dashboard } from '@/components/dashboard/Dashboard';
+import { Button } from '@/components/ui/button';
+import { LogOut, Globe, Eye } from 'lucide-react';
 
 const Index = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const { user, userProfile, signOut, loading } = useAuth();
 
-  const handleLogin = (userData: any) => {
-    setCurrentUser(userData);
-    setIsLoggedIn(true);
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    setIsLoggedIn(false);
-  };
-
-  if (!isLoggedIn) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e0e7ff' fill-opacity='0.1'%3E%3Ccircle cx='7' cy='7' r='7'/%3E%3Ccircle cx='53' cy='7' r='7'/%3E%3Ccircle cx='7' cy='53' r='7'/%3E%3Ccircle cx='53' cy='53' r='7'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }}></div>
-        
-        <div className="relative w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mb-4 shadow-lg">
-              <Globe className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">نظام إدارة السياحة</h1>
-            <p className="text-gray-600">مرحباً بك في نظام CRM المتخصص للشركات السياحية</p>
-          </div>
-          
-          <LoginForm onLogin={handleLogin} />
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">جاري التحميل...</p>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-reverse space-x-4">
-            <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
-              <Globe className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">نظام إدارة السياحة</h1>
-              <p className="text-sm text-gray-600">مرحباً، {currentUser?.name}</p>
-            </div>
+  // If user is not logged in, show auth page
+  if (!user) {
+    return <AuthPage />;
+  }
+
+  // If user is not approved, show pending message
+  if (!userProfile?.is_approved && userProfile?.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full mb-4 shadow-lg">
+            <Globe className="w-8 h-8 text-white" />
           </div>
-          
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">في انتظار الموافقة</h1>
+          <p className="text-gray-600 mb-6">
+            تم إنشاء حسابك بنجاح. سيتم مراجعة طلبك والموافقة عليه من قبل الإدارة قريباً.
+          </p>
+          <p className="text-sm text-gray-500 mb-6">
+            سيصل إيميل الموافقة إلى: klidmorre@gmail.com
+          </p>
           <Button 
-            onClick={handleLogout}
+            onClick={() => signOut()}
             variant="outline"
-            className="flex items-center space-x-reverse space-x-2"
+            className="flex items-center space-x-reverse space-x-2 mx-auto"
           >
             <LogOut className="w-4 h-4" />
             <span>تسجيل الخروج</span>
           </Button>
         </div>
+      </div>
+    );
+  }
+
+  // Main dashboard for approved users
+  return (
+    <div className="min-h-screen bg-gray-50" dir="rtl">
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-reverse space-x-4">
+            <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg">
+              <Globe className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">نظام إدارة السياحة</h1>
+              <p className="text-sm text-gray-600">مرحباً، {userProfile?.full_name || user.email}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-reverse space-x-2">
+            <Button 
+              onClick={() => window.open('/programs', '_blank')}
+              variant="outline"
+              className="flex items-center space-x-reverse space-x-2"
+            >
+              <Eye className="w-4 h-4" />
+              <span>عرض البرامج للعملاء</span>
+            </Button>
+            
+            <Button 
+              onClick={() => signOut()}
+              variant="outline"
+              className="flex items-center space-x-reverse space-x-2"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>تسجيل الخروج</span>
+            </Button>
+          </div>
+        </div>
       </header>
 
-      <Dashboard currentUser={currentUser} />
+      <Dashboard currentUser={{ userProfile, user }} />
     </div>
   );
 };

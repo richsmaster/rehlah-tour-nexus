@@ -16,7 +16,7 @@ interface DashboardProps {
 export const Dashboard = ({ currentUser }: DashboardProps) => {
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Sample data for charts
+  // Sample data for charts with green theme
   const monthlyBookings = [
     { month: "يناير", bookings: 45, revenue: 125000 },
     { month: "فبراير", bookings: 52, revenue: 145000 },
@@ -27,10 +27,10 @@ export const Dashboard = ({ currentUser }: DashboardProps) => {
   ];
 
   const destinationData = [
-    { name: "تايلاند", bookings: 120, color: "#3B82F6" },
+    { name: "تايلاند", bookings: 120, color: "#059669" },
     { name: "ماليزيا", bookings: 98, color: "#10B981" },
-    { name: "تركيا", bookings: 87, color: "#F59E0B" },
-    { name: "الإمارات", bookings: 65, color: "#EF4444" },
+    { name: "تركيا", bookings: 87, color: "#34D399" },
+    { name: "الإمارات", bookings: 65, color: "#6EE7B7" },
   ];
 
   const stats = [
@@ -39,28 +39,28 @@ export const Dashboard = ({ currentUser }: DashboardProps) => {
       value: "1,234",
       change: "+12%",
       icon: Users,
-      color: "from-blue-500 to-blue-600"
+      color: "from-green-500 to-emerald-600"
     },
     {
       title: "الحجوزات الشهرية",
       value: "84",
       change: "+8%",
       icon: Calendar,
-      color: "from-green-500 to-green-600"
+      color: "from-emerald-500 to-teal-600"
     },
     {
       title: "البرامج النشطة",
       value: "45",
       change: "+3%",
       icon: Globe,
-      color: "from-purple-500 to-purple-600"
+      color: "from-teal-500 to-green-600"
     },
     {
       title: "الإيرادات الشهرية",
       value: "220,000 ر.س",
       change: "+15%",
       icon: FileSearch,
-      color: "from-orange-500 to-orange-600"
+      color: "from-green-600 to-emerald-700"
     },
   ];
 
@@ -125,7 +125,7 @@ export const Dashboard = ({ currentUser }: DashboardProps) => {
                     <XAxis dataKey="month" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="bookings" fill="#3B82F6" radius={4} />
+                    <Bar dataKey="bookings" fill="#059669" radius={4} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -173,8 +173,8 @@ export const Dashboard = ({ currentUser }: DashboardProps) => {
                   { action: "دفع مؤكد", customer: "سارة محمود", program: "برنامج الإمارات 3 أيام", time: "منذ ساعة" },
                 ].map((activity, index) => (
                   <div key={index} className="flex items-center space-x-reverse space-x-4 p-4 bg-gray-50 rounded-lg">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-blue-600" />
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <User className="w-5 h-5 text-green-600" />
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-gray-900">{activity.action}</p>
