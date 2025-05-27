@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,10 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Edit, Trash2, Calendar, MapPin, Users, Clock, Image, DragHandleDots2Icon } from 'lucide-react';
+import { Plus, Edit, Trash2, Calendar, MapPin, Users, Clock, Image, GripVertical } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { ProgramDaysManagement } from './ProgramDaysManagement';
+import { AdditionalServicesManagement } from './AdditionalServicesManagement';
+import { CategoriesManagement } from './CategoriesManagement';
 
 interface Country {
   id: string;
@@ -150,7 +152,13 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
       if (categoriesRes.error) throw categoriesRes.error;
       if (servicesRes.error) throw servicesRes.error;
 
-      setPrograms(programsRes.data || []);
+      // تحويل البيانات إلى النوع المطلوب
+      const transformedPrograms = (programsRes.data || []).map(program => ({
+        ...program,
+        gallery: Array.isArray(program.gallery) ? program.gallery : []
+      }));
+
+      setPrograms(transformedPrograms);
       setCountries(countriesRes.data || []);
       setCities(citiesRes.data || []);
       setCategories(categoriesRes.data || []);
@@ -187,9 +195,15 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
 
           if (toursError) throw toursError;
 
+          // تحويل البيانات إلى النوع المطلوب
+          const transformedTours = (toursData || []).map(tour => ({
+            ...tour,
+            images: Array.isArray(tour.images) ? tour.images : []
+          }));
+
           return {
             ...day,
-            tours: toursData || []
+            tours: transformedTours
           };
         })
       );
