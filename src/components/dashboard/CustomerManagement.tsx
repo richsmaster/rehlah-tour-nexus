@@ -8,17 +8,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, User, Calendar, FileSearch, MessageCircle } from "lucide-react";
+import { Search, User, Calendar, FileSearch, MessageCircle, Phone, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface CustomerManagementProps {
   currentUser: any;
 }
 
+interface Customer {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  status: string;
+  program: string;
+  bookingDate: string;
+  notes: string;
+  lastContact: string;
+}
+
 export const CustomerManagement = ({ currentUser }: CustomerManagementProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [isAddingCustomer, setIsAddingCustomer] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [showContactDialog, setShowContactDialog] = useState(false);
+  const [showBookingDialog, setShowBookingDialog] = useState(false);
   const { toast } = useToast();
 
   const customers = [
@@ -95,6 +111,37 @@ export const CustomerManagement = ({ currentUser }: CustomerManagementProps) => 
       description: "تم إضافة عميل جديد بنجاح",
     });
     setIsAddingCustomer(false);
+  };
+
+  const handleViewDetails = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setShowDetailsDialog(true);
+  };
+
+  const handleContact = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setShowContactDialog(true);
+  };
+
+  const handleAddBooking = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setShowBookingDialog(true);
+  };
+
+  const handleSendMessage = () => {
+    toast({
+      title: "تم إرسال الرسالة",
+      description: `تم إرسال رسالة إلى ${selectedCustomer?.name}`,
+    });
+    setShowContactDialog(false);
+  };
+
+  const handleCreateBooking = () => {
+    toast({
+      title: "تم إنشاء الحجز",
+      description: `تم إنشاء حجز جديد للعميل ${selectedCustomer?.name}`,
+    });
+    setShowBookingDialog(false);
   };
 
   return (
@@ -220,15 +267,27 @@ export const CustomerManagement = ({ currentUser }: CustomerManagementProps) => 
                   )}
 
                   <div className="flex justify-end space-x-reverse space-x-2">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewDetails(customer)}
+                    >
                       <FileSearch className="w-4 h-4 ml-2" />
                       عرض التفاصيل
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleContact(customer)}
+                    >
                       <MessageCircle className="w-4 h-4 ml-2" />
                       تواصل
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleAddBooking(customer)}
+                    >
                       <Calendar className="w-4 h-4 ml-2" />
                       إضافة حجز
                     </Button>
@@ -239,6 +298,160 @@ export const CustomerManagement = ({ currentUser }: CustomerManagementProps) => 
           </div>
         </CardContent>
       </Card>
+
+      {/* Customer Details Dialog */}
+      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
+        <DialogContent className="max-w-2xl" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>تفاصيل العميل</DialogTitle>
+          </DialogHeader>
+          {selectedCustomer && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">الاسم</Label>
+                  <p className="text-lg font-semibold">{selectedCustomer.name}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">البريد الإلكتروني</Label>
+                  <p className="text-lg">{selectedCustomer.email}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">رقم الهاتف</Label>
+                  <p className="text-lg">{selectedCustomer.phone}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">الحالة</Label>
+                  <Badge className={getStatusColor(selectedCustomer.status)}>
+                    {selectedCustomer.status}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">البرنامج</Label>
+                  <p className="text-lg">{selectedCustomer.program}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">تاريخ الحجز</Label>
+                  <p className="text-lg">{selectedCustomer.bookingDate || "لم يتم الحجز بعد"}</p>
+                </div>
+              </div>
+              {selectedCustomer.notes && (
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">الملاحظات</Label>
+                  <div className="bg-gray-50 p-3 rounded-lg mt-1">
+                    <p>{selectedCustomer.notes}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Contact Dialog */}
+      <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>تواصل مع العميل</DialogTitle>
+          </DialogHeader>
+          {selectedCustomer && (
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <h4 className="font-semibold">{selectedCustomer.name}</h4>
+                <p className="text-sm text-gray-600">{selectedCustomer.email}</p>
+                <p className="text-sm text-gray-600">{selectedCustomer.phone}</p>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="messageSubject">موضوع الرسالة</Label>
+                  <Input id="messageSubject" placeholder="أدخل موضوع الرسالة" className="text-right" dir="rtl" />
+                </div>
+                <div>
+                  <Label htmlFor="messageContent">محتوى الرسالة</Label>
+                  <Textarea 
+                    id="messageContent" 
+                    placeholder="اكتب رسالتك هنا..." 
+                    className="text-right min-h-[100px]" 
+                    dir="rtl" 
+                  />
+                </div>
+                
+                <div className="flex space-x-reverse space-x-2">
+                  <Button onClick={handleSendMessage} className="flex-1">
+                    <Mail className="w-4 h-4 ml-2" />
+                    إرسال إيميل
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => window.open(`tel:${selectedCustomer.phone}`)}
+                    className="flex-1"
+                  >
+                    <Phone className="w-4 h-4 ml-2" />
+                    اتصال
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Booking Dialog */}
+      <Dialog open={showBookingDialog} onOpenChange={setShowBookingDialog}>
+        <DialogContent className="max-w-md" dir="rtl">
+          <DialogHeader>
+            <DialogTitle>إضافة حجز جديد</DialogTitle>
+          </DialogHeader>
+          {selectedCustomer && (
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <h4 className="font-semibold">{selectedCustomer.name}</h4>
+                <p className="text-sm text-gray-600">{selectedCustomer.email}</p>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="bookingProgram">البرنامج السياحي</Label>
+                  <Select dir="rtl">
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر البرنامج" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="thailand">برنامج تايلاند 7 أيام</SelectItem>
+                      <SelectItem value="malaysia">برنامج ماليزيا 10 أيام</SelectItem>
+                      <SelectItem value="turkey">برنامج تركيا 5 أيام</SelectItem>
+                      <SelectItem value="uae">برنامج الإمارات 3 أيام</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="bookingDate">تاريخ السفر</Label>
+                  <Input id="bookingDate" type="date" className="text-right" dir="rtl" />
+                </div>
+                <div>
+                  <Label htmlFor="travelers">عدد المسافرين</Label>
+                  <Input id="travelers" type="number" placeholder="عدد الأشخاص" className="text-right" dir="rtl" />
+                </div>
+                <div>
+                  <Label htmlFor="bookingNotes">ملاحظات الحجز</Label>
+                  <Textarea 
+                    id="bookingNotes" 
+                    placeholder="أي ملاحظات خاصة بالحجز..." 
+                    className="text-right" 
+                    dir="rtl" 
+                  />
+                </div>
+                
+                <Button onClick={handleCreateBooking} className="w-full">
+                  <Calendar className="w-4 h-4 ml-2" />
+                  إنشاء الحجز
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
