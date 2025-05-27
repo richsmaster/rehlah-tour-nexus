@@ -24,35 +24,7 @@ const Index = () => {
     return <AuthPage />;
   }
 
-  // If user is not approved, show pending message
-  if (!userProfile?.is_approved && userProfile?.role !== 'admin') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full mb-4 shadow-lg">
-            <Globe className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">في انتظار الموافقة</h1>
-          <p className="text-gray-600 mb-6">
-            تم إنشاء حسابك بنجاح. سيتم مراجعة طلبك والموافقة عليه من قبل الإدارة قريباً.
-          </p>
-          <p className="text-sm text-gray-500 mb-6">
-            سيصل إيميل الموافقة إلى: klidmorre@gmail.com
-          </p>
-          <Button 
-            onClick={() => signOut()}
-            variant="outline"
-            className="flex items-center space-x-reverse space-x-2 mx-auto"
-          >
-            <LogOut className="w-4 h-4" />
-            <span>تسجيل الخروج</span>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  // Main dashboard for approved users
+  // Main dashboard for all users (no approval needed)
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
       <header className="bg-white shadow-sm border-b border-gray-200">

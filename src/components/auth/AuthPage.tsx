@@ -79,7 +79,7 @@ export const AuthPage = () => {
       console.log('Signup successful');
       toast({
         title: 'تم إنشاء الحساب بنجاح',
-        description: 'سيتم مراجعة طلبك والموافقة عليه قريباً. سيصل إيميل الموافقة إلى الإدارة.',
+        description: 'مرحباً بك في النظام! يمكنك الآن الدخول والعمل.',
       });
       // Reset form
       setSignupData({ email: '', password: '', fullName: '', role: '' });
@@ -164,11 +164,6 @@ export const AuthPage = () => {
                     {loading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
                   </Button>
                 </form>
-                
-                <div className="mt-6 p-4 bg-green-50 rounded-lg">
-                  <h4 className="font-semibold text-green-800 mb-2">للاختبار:</h4>
-                  <p className="text-sm text-green-700">يمكنك إنشاء حساب جديد وسيتم إرسال طلب موافقة للإدارة</p>
-                </div>
               </TabsContent>
               
               <TabsContent value="signup">
@@ -226,7 +221,7 @@ export const AuthPage = () => {
                   
                   <div className="space-y-2">
                     <Label className="text-right flex items-center justify-end space-x-reverse space-x-2">
-                      <span>المنصب المطلوب</span>
+                      <span>المنصب</span>
                       <Building className="w-4 h-4" />
                     </Label>
                     <Select value={signupData.role} onValueChange={(value) => setSignupData({...signupData, role: value})} dir="rtl">
@@ -250,10 +245,6 @@ export const AuthPage = () => {
                     {loading ? 'جاري إنشاء الحساب...' : 'إنشاء حساب جديد'}
                   </Button>
                 </form>
-                
-                <div className="mt-4 text-center text-sm text-gray-500">
-                  <p>سيتم إرسال رابط الموافقة على التسجيل للمراجعة</p>
-                </div>
               </TabsContent>
             </Tabs>
           </CardContent>

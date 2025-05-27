@@ -104,28 +104,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       },
     });
 
-    if (!error && data.user) {
-      // Send approval email
-      try {
-        const { error: emailError } = await supabase.functions.invoke('send-approval-email', {
-          body: {
-            user_email: email,
-            user_name: fullName,
-            user_role: role,
-            user_id: data.user.id,
-          },
-        });
-        
-        if (emailError) {
-          console.error('Error sending approval email:', emailError);
-        } else {
-          console.log('Approval email sent successfully');
-        }
-      } catch (emailErr) {
-        console.error('Email function error:', emailErr);
-      }
-    }
-
     console.log('Sign up result:', { user: data?.user?.email, error });
     return { data, error };
   };
