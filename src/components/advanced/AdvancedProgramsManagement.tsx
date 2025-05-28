@@ -201,38 +201,23 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
         .from('program_days')
         .select('*')
         .eq('program_id', programId)
-        .order('sort_order');
+        .order('day_number', { ascending: true });
 
       if (daysError) throw daysError;
 
-      const daysWithTours: ProgramDay[] = await Promise.all(
+      const daysWithTours = await Promise.all(
         (daysData || []).map(async (day) => {
           const { data: toursData, error: toursError } = await supabase
             .from('day_tours')
             .select('*')
             .eq('day_id', day.id)
-            .order('sort_order');
+            .order('sort_order', { ascending: true });
 
           if (toursError) throw toursError;
 
-          // تحويل البيانات إلى النوع المطلوب مع معالجة المصفوفات
-          const transformedTours: DayTour[] = (toursData || []).map(tour => ({
-            ...tour,
-            images: Array.isArray(tour.images) ? tour.images.filter((item): item is string => typeof item === 'string') : [],
-            description: tour.description || '',
-            start_time: tour.start_time || '',
-            end_time: tour.end_time || '',
-            location: tour.location || '',
-            activity_type: tour.activity_type || '',
-            notes: tour.notes || '',
-            day_id: tour.day_id || ''
-          }));
-
           return {
             ...day,
-            description: day.description || '',
-            city_id: day.city_id || '',
-            tours: transformedTours
+            tours: toursData || []
           };
         })
       );
@@ -240,17 +225,12 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
       setProgramDays(daysWithTours);
     } catch (error) {
       console.error('Error fetching program days:', error);
-      toast({
-        title: 'خطأ',
-        description: 'حدث خطأ في تحميل أيام البرنامج',
-        variant: 'destructive',
-      });
     }
   };
 
-  const handleProgramSelect = (program: Program) => {
+  const handleProgramSelect = async (program: Program) => {
     setSelectedProgram(program);
-    fetchProgramDays(program.id);
+    await fetchProgramDays(program.id);
     setActiveTab('days');
   };
 
@@ -800,22 +780,14 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
         </TabsContent>
 
         <TabsContent value="days">
-          {selectedProgram ? (
-            <ProgramDaysManagement 
-              program={selectedProgram} 
+          {selectedProgram && (
+            <ProgramDaysManagement
+              program={selectedProgram}
               programDays={programDays}
               cities={cities}
-              onDaysUpdate={() => fetchProgramDays(selectedProgram.id)}
+              onDaysUpdate={handleDaysUpdate}
               canManage={canManagePrograms}
             />
-          ) : (
-            <Card>
-              <CardContent className="text-center py-8">
-                <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-600 mb-2">اختر برنامجاً لإدارة أيامه</h3>
-                <p className="text-gray-500">قم بالنقر على أحد البرامج في القائمة لبدء إدارة الأيام والجولات</p>
-              </CardContent>
-            </Card>
           )}
         </TabsContent>
 

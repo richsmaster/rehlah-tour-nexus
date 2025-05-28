@@ -7,10 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, Clock, MapPin, Image, GripVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, Clock, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DayToursManagement } from './DayToursManagement';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface City {
   id: string;
@@ -67,6 +68,7 @@ export const ProgramDaysManagement = ({
   const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
   const [editingDay, setEditingDay] = useState<ProgramDay | null>(null);
   const [loading, setLoading] = useState(false);
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
 
   const [dayFormData, setDayFormData] = useState({
     day_number: 1,
@@ -85,6 +87,16 @@ export const ProgramDaysManagement = ({
       city_id: ''
     });
     setEditingDay(null);
+  };
+
+  const toggleDayExpansion = (dayId: string) => {
+    const newExpanded = new Set(expandedDays);
+    if (newExpanded.has(dayId)) {
+      newExpanded.delete(dayId);
+    } else {
+      newExpanded.add(dayId);
+    }
+    setExpandedDays(newExpanded);
   };
 
   const handleEditDay = (day: ProgramDay) => {
@@ -151,7 +163,7 @@ export const ProgramDaysManagement = ({
   };
 
   const handleDeleteDay = async (id: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذا اليوم؟')) return;
+    if (!confirm('هل أنت متأكد من حذف هذا اليوم؟ سيتم حذف جميع الجولات المرتبطة به أيضاً.')) return;
 
     try {
       const { error } = await supabase
@@ -297,86 +309,76 @@ export const ProgramDaysManagement = ({
           </Card>
         ) : (
           programDays.map((day) => (
-            <Card key={day.id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-reverse space-x-2">
-                    <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
-                      اليوم {day.day_number}
+            <Collapsible key={day.id} open={expandedDays.has(day.id)} onOpenChange={() => toggleDayExpansion(day.id)}>
+              <Card className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-reverse space-x-2">
+                      <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                        اليوم {day.day_number}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">{day.title}</CardTitle>
+                        {day.city_id && (
+                          <CardDescription className="flex items-center space-x-reverse space-x-1 mt-1">
+                            <MapPin className="w-4 h-4" />
+                            <span>{getCityName(day.city_id)}</span>
+                          </CardDescription>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle className="text-lg">{day.title}</CardTitle>
-                      {day.city_id && (
-                        <CardDescription className="flex items-center space-x-reverse space-x-1 mt-1">
-                          <MapPin className="w-4 h-4" />
-                          <span>{getCityName(day.city_id)}</span>
-                        </CardDescription>
+                    
+                    <div className="flex items-center space-x-reverse space-x-2">
+                      <CollapsibleTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          {expandedDays.has(day.id) ? (
+                            <ChevronUp className="w-4 h-4" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </CollapsibleTrigger>
+                      
+                      {canManage && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditDay(day)}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteDay(day.id)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </>
                       )}
                     </div>
                   </div>
-                  
-                  {canManage && (
-                    <div className="flex items-center space-x-reverse space-x-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEditDay(day)}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDeleteDay(day.id)}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </CardHeader>
-              
-              <CardContent>
-                {day.description && (
-                  <p className="text-gray-600 mb-4">{day.description}</p>
-                )}
+                </CardHeader>
                 
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-gray-800">الجولات والأنشطة:</h4>
-                  {day.tours.length === 0 ? (
-                    <p className="text-gray-500 text-sm">لم يتم إضافة جولات لهذا اليوم بعد</p>
-                  ) : (
-                    <div className="grid gap-2">
-                      {day.tours.map((tour) => (
-                        <div key={tour.id} className="bg-gray-50 p-3 rounded-lg">
-                          <div className="flex items-center justify-between">
-                            <h5 className="font-medium">{tour.title}</h5>
-                            {(tour.start_time || tour.end_time) && (
-                              <div className="flex items-center space-x-reverse space-x-1 text-sm text-gray-600">
-                                <Clock className="w-3 h-3" />
-                                <span>
-                                  {tour.start_time && tour.end_time 
-                                    ? `${tour.start_time} - ${tour.end_time}`
-                                    : tour.start_time || tour.end_time
-                                  }
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          {tour.location && (
-                            <p className="text-sm text-gray-600 mt-1">📍 {tour.location}</p>
-                          )}
-                          {tour.description && (
-                            <p className="text-sm text-gray-700 mt-2">{tour.description}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                <CollapsibleContent>
+                  <CardContent>
+                    {day.description && (
+                      <p className="text-gray-600 mb-4">{day.description}</p>
+                    )}
+                    
+                    <DayToursManagement
+                      dayId={day.id}
+                      dayTitle={day.title}
+                      tours={day.tours}
+                      onToursUpdate={onDaysUpdate}
+                      canManage={canManage}
+                    />
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
           ))
         )}
       </div>
