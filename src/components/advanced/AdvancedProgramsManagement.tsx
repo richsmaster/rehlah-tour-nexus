@@ -215,9 +215,21 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
 
           if (toursError) throw toursError;
 
+          // تحويل بيانات الجولات لضمان توافق الأنواع
+          const processedTours: DayTour[] = (toursData || []).map(tour => ({
+            ...tour,
+            images: Array.isArray(tour.images) ? tour.images : [],
+            description: tour.description || undefined,
+            start_time: tour.start_time || undefined,
+            end_time: tour.end_time || undefined,
+            location: tour.location || undefined,
+            activity_type: tour.activity_type || undefined,
+            notes: tour.notes || undefined
+          }));
+
           return {
             ...day,
-            tours: toursData || []
+            tours: processedTours
           };
         })
       );
@@ -367,6 +379,12 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
         description: 'حدث خطأ في حذف البرنامج',
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleDaysUpdate = () => {
+    if (selectedProgram) {
+      fetchProgramDays(selectedProgram.id);
     }
   };
 
