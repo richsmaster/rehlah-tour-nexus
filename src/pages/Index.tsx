@@ -2,11 +2,12 @@
 import { useAuth } from '@/hooks/useAuth';
 import { AuthPage } from '@/components/auth/AuthPage';
 import { Dashboard } from '@/components/dashboard/Dashboard';
-import { Button } from '@/components/ui/button';
-import { LogOut, Globe, Eye } from 'lucide-react';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/sidebar/AppSidebar';
+import { Globe } from 'lucide-react';
 
 const Index = () => {
-  const { user, userProfile, signOut, loading } = useAuth();
+  const { user, userProfile, loading } = useAuth();
 
   if (loading) {
     return (
@@ -24,45 +25,33 @@ const Index = () => {
     return <AuthPage />;
   }
 
-  // Main dashboard for all users (no approval needed)
+  // Main dashboard with sidebar for all users
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-reverse space-x-4">
-            <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg">
-              <Globe className="w-6 h-6 text-white" />
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full" dir="rtl">
+        <AppSidebar />
+        <SidebarInset className="flex-1">
+          <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+            <div className="px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center space-x-reverse space-x-4">
+                <SidebarTrigger />
+                <div className="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg">
+                  <Globe className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">نظام إدارة السياحة</h1>
+                  <p className="text-sm text-gray-600">مرحباً، {userProfile?.full_name || user.email}</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">نظام إدارة السياحة</h1>
-              <p className="text-sm text-gray-600">مرحباً، {userProfile?.full_name || user.email}</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-reverse space-x-2">
-            <Button 
-              onClick={() => window.open('/programs', '_blank')}
-              variant="outline"
-              className="flex items-center space-x-reverse space-x-2"
-            >
-              <Eye className="w-4 h-4" />
-              <span>عرض البرامج للعملاء</span>
-            </Button>
-            
-            <Button 
-              onClick={() => signOut()}
-              variant="outline"
-              className="flex items-center space-x-reverse space-x-2"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>تسجيل الخروج</span>
-            </Button>
-          </div>
-        </div>
-      </header>
+          </header>
 
-      <Dashboard currentUser={{ userProfile, user }} />
-    </div>
+          <main className="flex-1">
+            <Dashboard currentUser={{ userProfile, user }} />
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 };
 
