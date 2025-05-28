@@ -41,6 +41,7 @@ interface AdditionalService {
   price: number;
   service_type: string;
   is_optional: boolean;
+  created_at: string;
 }
 
 interface ProgramDay {
@@ -152,17 +153,36 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
       if (categoriesRes.error) throw categoriesRes.error;
       if (servicesRes.error) throw servicesRes.error;
 
-      // تحويل البيانات إلى النوع المطلوب
-      const transformedPrograms = (programsRes.data || []).map(program => ({
+      // تحويل البيانات إلى النوع المطلوب مع معالجة المصفوفات
+      const transformedPrograms: Program[] = (programsRes.data || []).map(program => ({
         ...program,
-        gallery: Array.isArray(program.gallery) ? program.gallery : []
+        gallery: Array.isArray(program.gallery) ? program.gallery.filter((item): item is string => typeof item === 'string') : [],
+        cities: Array.isArray(program.cities) ? program.cities : [],
+        hotels: Array.isArray(program.hotels) ? program.hotels : [],
+        activities: Array.isArray(program.activities) ? program.activities : [],
+        includes: Array.isArray(program.includes) ? program.includes : [],
+        description: program.description || '',
+        category_id: program.category_id || '',
+        min_participants: program.min_participants || 1,
+        max_participants: program.max_participants || 50,
+        difficulty_level: program.difficulty_level || 'متوسط',
+        season: program.season || '',
+        featured_image: program.featured_image || '',
+        created_at: program.created_at || new Date().toISOString()
+      }));
+
+      const transformedServices: AdditionalService[] = (servicesRes.data || []).map(service => ({
+        ...service,
+        created_at: service.created_at || new Date().toISOString(),
+        description: service.description || '',
+        is_optional: service.is_optional ?? true
       }));
 
       setPrograms(transformedPrograms);
       setCountries(countriesRes.data || []);
       setCities(citiesRes.data || []);
       setCategories(categoriesRes.data || []);
-      setServices(servicesRes.data || []);
+      setServices(transformedServices);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({
@@ -185,7 +205,7 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
 
       if (daysError) throw daysError;
 
-      const daysWithTours = await Promise.all(
+      const daysWithTours: ProgramDay[] = await Promise.all(
         (daysData || []).map(async (day) => {
           const { data: toursData, error: toursError } = await supabase
             .from('day_tours')
@@ -195,14 +215,23 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
 
           if (toursError) throw toursError;
 
-          // تحويل البيانات إلى النوع المطلوب
-          const transformedTours = (toursData || []).map(tour => ({
+          // تحويل البيانات إلى النوع المطلوب مع معالجة المصفوفات
+          const transformedTours: DayTour[] = (toursData || []).map(tour => ({
             ...tour,
-            images: Array.isArray(tour.images) ? tour.images : []
+            images: Array.isArray(tour.images) ? tour.images.filter((item): item is string => typeof item === 'string') : [],
+            description: tour.description || '',
+            start_time: tour.start_time || '',
+            end_time: tour.end_time || '',
+            location: tour.location || '',
+            activity_type: tour.activity_type || '',
+            notes: tour.notes || '',
+            day_id: tour.day_id || ''
           }));
 
           return {
             ...day,
+            description: day.description || '',
+            city_id: day.city_id || '',
             tours: transformedTours
           };
         })
