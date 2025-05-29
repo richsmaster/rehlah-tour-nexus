@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -218,7 +219,7 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
           // تحويل بيانات الجولات لضمان توافق الأنواع
           const processedTours: DayTour[] = (toursData || []).map(tour => ({
             ...tour,
-            images: Array.isArray(tour.images) ? tour.images : [],
+            images: Array.isArray(tour.images) ? tour.images.filter((img): img is string => typeof img === 'string') : [],
             description: tour.description || undefined,
             start_time: tour.start_time || undefined,
             end_time: tour.end_time || undefined,
