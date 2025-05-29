@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -87,6 +86,11 @@ export const ProgramDaysManagement = ({
       city_id: ''
     });
     setEditingDay(null);
+  };
+
+  const openAddDayDialog = () => {
+    resetDayForm();
+    setIsDayDialogOpen(true);
   };
 
   const toggleDayExpansion = (dayId: string) => {
@@ -207,7 +211,7 @@ export const ProgramDaysManagement = ({
             <DialogTrigger asChild>
               <Button 
                 className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                onClick={resetDayForm}
+                onClick={openAddDayDialog}
               >
                 <Plus className="w-4 h-4 ml-2" />
                 إضافة يوم جديد
@@ -299,7 +303,7 @@ export const ProgramDaysManagement = ({
               <p className="text-gray-500 mb-4">ابدأ بإضافة أيام البرنامج السياحي</p>
               {canManage && (
                 <Button 
-                  onClick={() => setIsDayDialogOpen(true)}
+                  onClick={openAddDayDialog}
                   className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
                 >
                   إضافة اليوم الأول

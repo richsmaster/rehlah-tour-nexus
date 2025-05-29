@@ -799,7 +799,7 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
         </TabsContent>
 
         <TabsContent value="days">
-          {selectedProgram && (
+          {selectedProgram ? (
             <ProgramDaysManagement
               program={selectedProgram}
               programDays={programDays}
@@ -807,6 +807,20 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
               onDaysUpdate={handleDaysUpdate}
               canManage={canManagePrograms}
             />
+          ) : (
+            <Card>
+              <CardContent className="text-center py-12">
+                <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">اختر برنامج لإدارة أيامه</h3>
+                <p className="text-gray-500 mb-4">يجب أن تختار برنامج سياحي أولاً لتتمكن من إدارة أيامه وجولاته</p>
+                <Button 
+                  onClick={() => setActiveTab('programs')}
+                  className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                >
+                  اختر برنامج من القائمة
+                </Button>
+              </CardContent>
+            </Card>
           )}
         </TabsContent>
 
