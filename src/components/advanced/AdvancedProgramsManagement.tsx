@@ -136,6 +136,7 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
                            currentUser?.userProfile?.role === 'admin';
 
   useEffect(() => {
+    console.log('Component mounted, fetching data...');
     fetchAllData();
   }, []);
 
@@ -272,6 +273,8 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
   };
 
   const handleTemplateSelect = async (template: any) => {
+    console.log('Template selected:', template);
+    
     // إضافة البرنامج مباشرة إلى قاعدة البيانات من القالب
     const programData = {
       name: template.name,
@@ -295,11 +298,19 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
 
     try {
       setLoading(true);
-      const { error } = await supabase
+      console.log('Inserting program data:', programData);
+      
+      const { data, error } = await supabase
         .from('programs')
-        .insert([programData]);
+        .insert([programData])
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
+      console.log('Program inserted successfully:', data);
       
       toast({
         title: 'تم الإضافة بنجاح',
@@ -461,7 +472,10 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
         {canManagePrograms && (
           <div className="flex items-center space-x-reverse space-x-3">
             <Button 
-              onClick={() => setShowTemplates(true)}
+              onClick={() => {
+                console.log('Show templates button clicked');
+                setShowTemplates(true);
+              }}
               className="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white"
             >
               <Crown className="w-4 h-4 ml-2" />
@@ -741,28 +755,34 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
 
       {/* عرض قوالب البرامج الراقية */}
       {showTemplates && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center space-x-reverse space-x-2">
-                  <Crown className="w-5 h-5 text-amber-500" />
-                  <span>قوالب البرامج الراقية</span>
-                </CardTitle>
-                <CardDescription>اختر برنامج راقي لإضافته مباشرة إلى النظام</CardDescription>
+        <div className="mb-6">
+          <Card className="border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center space-x-reverse space-x-2 text-amber-800">
+                    <Crown className="w-5 h-5 text-amber-500" />
+                    <span>قوالب البرامج الراقية</span>
+                  </CardTitle>
+                  <CardDescription className="text-amber-700">اختر برنامج راقي لإضافته مباشرة إلى النظام</CardDescription>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    console.log('Hide templates button clicked');
+                    setShowTemplates(false);
+                  }}
+                  className="border-amber-300 text-amber-700 hover:bg-amber-100"
+                >
+                  إخفاء القوالب
+                </Button>
               </div>
-              <Button 
-                variant="outline" 
-                onClick={() => setShowTemplates(false)}
-              >
-                إخفاء القوالب
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <ProgramTemplates onSelectTemplate={handleTemplateSelect} />
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent>
+              <ProgramTemplates onSelectTemplate={handleTemplateSelect} />
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -776,7 +796,7 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
         <TabsContent value="programs">
           <Card>
             <CardHeader>
-              <CardTitle>البرامج السياحية المتقدمة</CardTitle>
+              <CardTitle>البرامج السياحية المتقدمة ({programs.length})</CardTitle>
               <CardDescription>إدارة شاملة لجميع البرامج السياحية</CardDescription>
             </CardHeader>
             <CardContent>
@@ -788,7 +808,10 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
                   {canManagePrograms && (
                     <div className="flex items-center justify-center space-x-reverse space-x-4">
                       <Button 
-                        onClick={() => setShowTemplates(true)}
+                        onClick={() => {
+                          console.log('Add from luxury programs clicked');
+                          setShowTemplates(true);
+                        }}
                         className="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700"
                       >
                         <Crown className="w-4 h-4 ml-2" />
