@@ -271,28 +271,53 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
     setEditingProgram(null);
   };
 
-  const handleTemplateSelect = (template: any) => {
-    setFormData({
+  const handleTemplateSelect = async (template: any) => {
+    // إضافة البرنامج مباشرة إلى قاعدة البيانات من القالب
+    const programData = {
       name: template.name,
       country: template.country,
       duration: template.duration,
       price: template.price,
-      cities: template.cities.join(', '),
-      hotels: template.hotels.join(', '),
-      activities: template.activities.join(', '),
-      includes: template.includes.join(', '),
+      cities: template.cities,
+      hotels: template.hotels,
+      activities: template.activities,
+      includes: template.includes,
       description: template.description,
       is_available: true,
-      category_id: '',
+      category_id: null,
       min_participants: template.min_participants,
       max_participants: template.max_participants,
       difficulty_level: template.difficulty_level,
       season: template.season,
       featured_image: template.featured_image,
       gallery: template.gallery
-    });
-    setShowTemplates(false);
-    setIsDialogOpen(true);
+    };
+
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('programs')
+        .insert([programData]);
+
+      if (error) throw error;
+      
+      toast({
+        title: 'تم الإضافة بنجاح',
+        description: `تم إضافة برنامج ${template.name} بنجاح`,
+      });
+      
+      setShowTemplates(false);
+      await fetchAllData();
+    } catch (error) {
+      console.error('Error adding template program:', error);
+      toast({
+        title: 'خطأ',
+        description: 'حدث خطأ في إضافة البرنامج',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEdit = (program: Program) => {
@@ -724,7 +749,7 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
                   <Crown className="w-5 h-5 text-amber-500" />
                   <span>قوالب البرامج الراقية</span>
                 </CardTitle>
-                <CardDescription>اختر من مجموعة من أفخم البرامج السياحية العالمية</CardDescription>
+                <CardDescription>اختر برنامج راقي لإضافته مباشرة إلى النظام</CardDescription>
               </div>
               <Button 
                 variant="outline" 
@@ -756,23 +781,27 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
             </CardHeader>
             <CardContent>
               {programs.length === 0 ? (
-                <div className="text-center py-8">
-                  <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-600 mb-2">لا توجد برامج</h3>
-                  <p className="text-gray-500 mb-4">لم يتم إضافة أي برامج سياحية بعد</p>
+                <div className="text-center py-12">
+                  <Crown className="w-16 h-16 text-amber-400 mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-600 mb-2">لا توجد برامج</h3>
+                  <p className="text-gray-500 mb-6">ابدأ بإضافة البرامج السياحية الخاصة بك</p>
                   {canManagePrograms && (
-                    <div className="flex items-center justify-center space-x-reverse space-x-3">
+                    <div className="flex items-center justify-center space-x-reverse space-x-4">
                       <Button 
                         onClick={() => setShowTemplates(true)}
                         className="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700"
                       >
                         <Crown className="w-4 h-4 ml-2" />
-                        البرامج الراقية
+                        إضافة من البرامج الراقية
                       </Button>
                       <Button 
-                        onClick={() => setIsDialogOpen(true)}
+                        onClick={() => {
+                          resetForm();
+                          setIsDialogOpen(true);
+                        }}
                         className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                       >
+                        <Plus className="w-4 h-4 ml-2" />
                         إضافة برنامج جديد
                       </Button>
                     </div>
