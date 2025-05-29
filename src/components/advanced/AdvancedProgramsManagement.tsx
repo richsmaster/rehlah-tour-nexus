@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,13 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Edit, Trash2, Calendar, MapPin, Users, Clock, Image, GripVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, Calendar, MapPin, Users, Clock, Image, GripVertical, Crown, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { ProgramDaysManagement } from './ProgramDaysManagement';
 import { AdditionalServicesManagement } from './AdditionalServicesManagement';
 import { CategoriesManagement } from './CategoriesManagement';
+import { ProgramTemplates } from './ProgramTemplates';
 
 interface Country {
   id: string;
@@ -108,6 +108,7 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const [programDays, setProgramDays] = useState<ProgramDay[]>([]);
   const [activeTab, setActiveTab] = useState('programs');
+  const [showTemplates, setShowTemplates] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -270,6 +271,30 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
     setEditingProgram(null);
   };
 
+  const handleTemplateSelect = (template: any) => {
+    setFormData({
+      name: template.name,
+      country: template.country,
+      duration: template.duration,
+      price: template.price,
+      cities: template.cities.join(', '),
+      hotels: template.hotels.join(', '),
+      activities: template.activities.join(', '),
+      includes: template.includes.join(', '),
+      description: template.description,
+      is_available: true,
+      category_id: '',
+      min_participants: template.min_participants,
+      max_participants: template.max_participants,
+      difficulty_level: template.difficulty_level,
+      season: template.season,
+      featured_image: template.featured_image,
+      gallery: template.gallery
+    });
+    setShowTemplates(false);
+    setIsDialogOpen(true);
+  };
+
   const handleEdit = (program: Program) => {
     setEditingProgram(program);
     setFormData({
@@ -409,272 +434,311 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
         </div>
         
         {canManagePrograms && (
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                onClick={resetForm}
-              >
-                <Plus className="w-4 h-4 ml-2" />
-                إضافة برنامج متقدم
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" dir="rtl">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingProgram ? 'تعديل البرنامج المتقدم' : 'إضافة برنامج متقدم جديد'}
-                </DialogTitle>
-                <DialogDescription>
-                  {editingProgram ? 'قم بتعديل بيانات البرنامج المتقدم' : 'أدخل بيانات البرنامج المتقدم الجديد'}
-                </DialogDescription>
-              </DialogHeader>
-              
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <Tabs defaultValue="basic" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="basic">المعلومات الأساسية</TabsTrigger>
-                    <TabsTrigger value="advanced">المعلومات المتقدمة</TabsTrigger>
-                    <TabsTrigger value="media">الوسائط والصور</TabsTrigger>
-                  </TabsList>
+          <div className="flex items-center space-x-reverse space-x-3">
+            <Button 
+              onClick={() => setShowTemplates(true)}
+              className="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-white"
+            >
+              <Crown className="w-4 h-4 ml-2" />
+              البرامج الراقية
+            </Button>
+            
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  onClick={() => {
+                    resetForm();
+                    setShowTemplates(false);
+                  }}
+                >
+                  <Plus className="w-4 h-4 ml-2" />
+                  إضافة برنامج متقدم
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" dir="rtl">
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingProgram ? 'تعديل البرنامج المتقدم' : 'إضافة برنامج متقدم جديد'}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {editingProgram ? 'قم بتعديل بيانات البرنامج المتقدم' : 'أدخل بيانات البرنامج المتقدم الجديد'}
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <Tabs defaultValue="basic" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="basic">المعلومات الأساسية</TabsTrigger>
+                      <TabsTrigger value="advanced">المعلومات المتقدمة</TabsTrigger>
+                      <TabsTrigger value="media">الوسائط والصور</TabsTrigger>
+                    </TabsList>
 
-                  <TabsContent value="basic" className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <TabsContent value="basic" className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="name">اسم البرنامج</Label>
+                          <Input
+                            id="name"
+                            value={formData.name}
+                            onChange={(e) => setFormData({...formData, name: e.target.value})}
+                            placeholder="برنامج تايلاند الكلاسيكي المتقدم"
+                            required
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="country">الدولة</Label>
+                          <Select value={formData.country} onValueChange={(value) => setFormData({...formData, country: value})}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="اختر الدولة" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {countries.map((country) => (
+                                <SelectItem key={country.id} value={country.name}>
+                                  {country.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="duration">المدة</Label>
+                          <Input
+                            id="duration"
+                            value={formData.duration}
+                            onChange={(e) => setFormData({...formData, duration: e.target.value})}
+                            placeholder="7 أيام / 6 ليالي"
+                            required
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="price">السعر</Label>
+                          <Input
+                            id="price"
+                            value={formData.price}
+                            onChange={(e) => setFormData({...formData, price: e.target.value})}
+                            placeholder="3,500 ر.س"
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="category">فئة البرنامج</Label>
+                          <Select value={formData.category_id} onValueChange={(value) => setFormData({...formData, category_id: value})}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="اختر الفئة" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categories.map((category) => (
+                                <SelectItem key={category.id} value={category.id}>
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
                       <div className="space-y-2">
-                        <Label htmlFor="name">اسم البرنامج</Label>
+                        <Label htmlFor="description">الوصف التفصيلي</Label>
+                        <Textarea
+                          id="description"
+                          value={formData.description}
+                          onChange={(e) => setFormData({...formData, description: e.target.value})}
+                          placeholder="وصف شامل ومفصل عن البرنامج السياحي"
+                          rows={4}
+                        />
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="advanced" className="space-y-4">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="min_participants">الحد الأدنى للمشاركين</Label>
+                          <Input
+                            id="min_participants"
+                            type="number"
+                            value={formData.min_participants}
+                            onChange={(e) => setFormData({...formData, min_participants: parseInt(e.target.value)})}
+                            min="1"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="max_participants">الحد الأقصى للمشاركين</Label>
+                          <Input
+                            id="max_participants"
+                            type="number"
+                            value={formData.max_participants}
+                            onChange={(e) => setFormData({...formData, max_participants: parseInt(e.target.value)})}
+                            min="1"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="difficulty_level">مستوى الصعوبة</Label>
+                          <Select value={formData.difficulty_level} onValueChange={(value) => setFormData({...formData, difficulty_level: value})}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="سهل">سهل</SelectItem>
+                              <SelectItem value="متوسط">متوسط</SelectItem>
+                              <SelectItem value="صعب">صعب</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="season">الموسم المناسب</Label>
                         <Input
-                          id="name"
-                          value={formData.name}
-                          onChange={(e) => setFormData({...formData, name: e.target.value})}
-                          placeholder="برنامج تايلاند الكلاسيكي المتقدم"
+                          id="season"
+                          value={formData.season}
+                          onChange={(e) => setFormData({...formData, season: e.target.value})}
+                          placeholder="الصيف، الشتاء، طوال السنة"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="cities">المدن (مفصولة بفاصلة)</Label>
+                        <Input
+                          id="cities"
+                          value={formData.cities}
+                          onChange={(e) => setFormData({...formData, cities: e.target.value})}
+                          placeholder="بانكوك, بوكيت, شيانغ ماي"
                           required
                         />
                       </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="country">الدولة</Label>
-                        <Select value={formData.country} onValueChange={(value) => setFormData({...formData, country: value})}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="اختر الدولة" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {countries.map((country) => (
-                              <SelectItem key={country.id} value={country.name}>
-                                {country.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
 
-                    <div className="grid grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="duration">المدة</Label>
+                        <Label htmlFor="hotels">الفنادق (مفصولة بفاصلة)</Label>
                         <Input
-                          id="duration"
-                          value={formData.duration}
-                          onChange={(e) => setFormData({...formData, duration: e.target.value})}
-                          placeholder="7 أيام / 6 ليالي"
-                          required
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="price">السعر</Label>
-                        <Input
-                          id="price"
-                          value={formData.price}
-                          onChange={(e) => setFormData({...formData, price: e.target.value})}
-                          placeholder="3,500 ر.س"
+                          id="hotels"
+                          value={formData.hotels}
+                          onChange={(e) => setFormData({...formData, hotels: e.target.value})}
+                          placeholder="فندق 5 نجوم في بانكوك, منتجع شاطئي في بوكيت"
                           required
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="category">فئة البرنامج</Label>
-                        <Select value={formData.category_id} onValueChange={(value) => setFormData({...formData, category_id: value})}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="اختر الفئة" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categories.map((category) => (
-                              <SelectItem key={category.id} value={category.id}>
-                                {category.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="description">الوصف التفصيلي</Label>
-                      <Textarea
-                        id="description"
-                        value={formData.description}
-                        onChange={(e) => setFormData({...formData, description: e.target.value})}
-                        placeholder="وصف شامل ومفصل عن البرنامج السياحي"
-                        rows={4}
-                      />
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="advanced" className="space-y-4">
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="min_participants">الحد الأدنى للمشاركين</Label>
+                        <Label htmlFor="activities">الأنشطة (مفصولة بفاصلة)</Label>
                         <Input
-                          id="min_participants"
-                          type="number"
-                          value={formData.min_participants}
-                          onChange={(e) => setFormData({...formData, min_participants: parseInt(e.target.value)})}
-                          min="1"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="max_participants">الحد الأقصى للمشاركين</Label>
-                        <Input
-                          id="max_participants"
-                          type="number"
-                          value={formData.max_participants}
-                          onChange={(e) => setFormData({...formData, max_participants: parseInt(e.target.value)})}
-                          min="1"
+                          id="activities"
+                          value={formData.activities}
+                          onChange={(e) => setFormData({...formData, activities: e.target.value})}
+                          placeholder="جولة المعابد, رحلة الجزر, عرض الألوان والأصوات"
+                          required
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="difficulty_level">مستوى الصعوبة</Label>
-                        <Select value={formData.difficulty_level} onValueChange={(value) => setFormData({...formData, difficulty_level: value})}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="سهل">سهل</SelectItem>
-                            <SelectItem value="متوسط">متوسط</SelectItem>
-                            <SelectItem value="صعب">صعب</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <Label htmlFor="includes">يشمل (مفصول بفاصلة)</Label>
+                        <Input
+                          id="includes"
+                          value={formData.includes}
+                          onChange={(e) => setFormData({...formData, includes: e.target.value})}
+                          placeholder="الطيران, الإقامة, الإفطار, التنقلات"
+                          required
+                        />
                       </div>
-                    </div>
+                    </TabsContent>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="season">الموسم المناسب</Label>
-                      <Input
-                        id="season"
-                        value={formData.season}
-                        onChange={(e) => setFormData({...formData, season: e.target.value})}
-                        placeholder="الصيف، الشتاء، طوال السنة"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="cities">المدن (مفصولة بفاصلة)</Label>
-                      <Input
-                        id="cities"
-                        value={formData.cities}
-                        onChange={(e) => setFormData({...formData, cities: e.target.value})}
-                        placeholder="بانكوك, بوكيت, شيانغ ماي"
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="hotels">الفنادق (مفصولة بفاصلة)</Label>
-                      <Input
-                        id="hotels"
-                        value={formData.hotels}
-                        onChange={(e) => setFormData({...formData, hotels: e.target.value})}
-                        placeholder="فندق 5 نجوم في بانكوك, منتجع شاطئي في بوكيت"
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="activities">الأنشطة (مفصولة بفاصلة)</Label>
-                      <Input
-                        id="activities"
-                        value={formData.activities}
-                        onChange={(e) => setFormData({...formData, activities: e.target.value})}
-                        placeholder="جولة المعابد, رحلة الجزر, عرض الألوان والأصوات"
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="includes">يشمل (مفصول بفاصلة)</Label>
-                      <Input
-                        id="includes"
-                        value={formData.includes}
-                        onChange={(e) => setFormData({...formData, includes: e.target.value})}
-                        placeholder="الطيران, الإقامة, الإفطار, التنقلات"
-                        required
-                      />
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="media" className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="featured_image">الصورة الرئيسية (رابط)</Label>
-                      <Input
-                        id="featured_image"
-                        value={formData.featured_image}
-                        onChange={(e) => setFormData({...formData, featured_image: e.target.value})}
-                        placeholder="https://example.com/image.jpg"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>معرض الصور</Label>
-                      <div className="grid grid-cols-3 gap-2">
-                        {formData.gallery.map((image, index) => (
-                          <div key={index} className="relative">
-                            <img src={image} alt={`صورة ${index + 1}`} className="w-full h-20 object-cover rounded" />
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="sm"
-                              className="absolute top-1 right-1"
-                              onClick={() => {
-                                const newGallery = formData.gallery.filter((_, i) => i !== index);
-                                setFormData({...formData, gallery: newGallery});
-                              }}
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        ))}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="h-20 border-dashed"
-                          onClick={() => {
-                            const url = prompt('أدخل رابط الصورة:');
-                            if (url) {
-                              setFormData({...formData, gallery: [...formData.gallery, url]});
-                            }
-                          }}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
+                    <TabsContent value="media" className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="featured_image">الصورة الرئيسية (رابط)</Label>
+                        <Input
+                          id="featured_image"
+                          value={formData.featured_image}
+                          onChange={(e) => setFormData({...formData, featured_image: e.target.value})}
+                          placeholder="https://example.com/image.jpg"
+                        />
                       </div>
-                    </div>
-                  </TabsContent>
-                </Tabs>
 
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                    إلغاء
-                  </Button>
-                  <Button type="submit" disabled={loading} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
-                    {loading ? 'جاري الحفظ...' : editingProgram ? 'تحديث' : 'إضافة'}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+                      <div className="space-y-2">
+                        <Label>معرض الصور</Label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {formData.gallery.map((image, index) => (
+                            <div key={index} className="relative">
+                              <img src={image} alt={`صورة ${index + 1}`} className="w-full h-20 object-cover rounded" />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                className="absolute top-1 right-1"
+                                onClick={() => {
+                                  const newGallery = formData.gallery.filter((_, i) => i !== index);
+                                  setFormData({...formData, gallery: newGallery});
+                                }}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          ))}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-20 border-dashed"
+                            onClick={() => {
+                              const url = prompt('أدخل رابط الصورة:');
+                              if (url) {
+                                setFormData({...formData, gallery: [...formData.gallery, url]});
+                              }
+                            }}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+
+                  <div className="flex items-center justify-between pt-4 border-t">
+                    <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                      إلغاء
+                    </Button>
+                    <Button type="submit" disabled={loading} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
+                      {loading ? 'جاري الحفظ...' : editingProgram ? 'تحديث' : 'إضافة'}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         )}
       </div>
+
+      {/* عرض قوالب البرامج الراقية */}
+      {showTemplates && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center space-x-reverse space-x-2">
+                  <Crown className="w-5 h-5 text-amber-500" />
+                  <span>قوالب البرامج الراقية</span>
+                </CardTitle>
+                <CardDescription>اختر من مجموعة من أفخم البرامج السياحية العالمية</CardDescription>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowTemplates(false)}
+              >
+                إخفاء القوالب
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ProgramTemplates onSelectTemplate={handleTemplateSelect} />
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4">
@@ -697,12 +761,21 @@ export const AdvancedProgramsManagement = ({ currentUser }: AdvancedProgramsMana
                   <h3 className="text-lg font-semibold text-gray-600 mb-2">لا توجد برامج</h3>
                   <p className="text-gray-500 mb-4">لم يتم إضافة أي برامج سياحية بعد</p>
                   {canManagePrograms && (
-                    <Button 
-                      onClick={() => setIsDialogOpen(true)}
-                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                    >
-                      إضافة برنامج جديد
-                    </Button>
+                    <div className="flex items-center justify-center space-x-reverse space-x-3">
+                      <Button 
+                        onClick={() => setShowTemplates(true)}
+                        className="bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700"
+                      >
+                        <Crown className="w-4 h-4 ml-2" />
+                        البرامج الراقية
+                      </Button>
+                      <Button 
+                        onClick={() => setIsDialogOpen(true)}
+                        className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                      >
+                        إضافة برنامج جديد
+                      </Button>
+                    </div>
                   )}
                 </div>
               ) : (
